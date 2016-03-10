@@ -76,8 +76,8 @@ class BinaryString :
 		newBit = str (int (not bool (int (self.binaryStr[bitPlace]))))
 		self.binaryStr = self.binaryStr[:bitPlace] + newBit + self.binaryStr[(bitPlace+1):]
 
-	def rangeToPrecision (self, rangeIn) :
-		return int (math.ceil (math.log (rangeIn[1] - rangeIn[0], self.base2)))
+	def rangeToPrecision (self, rangeIn) : # range is inclusive
+		return int (math.ceil (math.log (rangeIn[1] - rangeIn[0] + 1, self.base2)))
 
 	def flipRandomBit (self) :
 		index = int (random.random () * (len (self.binaryStr) - 1))
@@ -130,10 +130,10 @@ class BinaryString :
 		assert (type (valueIn) == types.IntType or
 				valueIn == None), ("setFromInt: valueIn should be an int or None")
 
-		assert (valueIn >= self.range[0] and valueIn <= self.range[1]), ("setFromInt: value " +
-																			str (valueIn) +
-																			" outside of range " +
-																			str (self.range))
+# 		assert (valueIn >= self.range[0] and valueIn <= self.range[1]), ("setFromInt: value " +
+# 																			str (valueIn) +
+# 																			" outside of range " +
+# 																			str (self.range))
 
 
 		valueMod = (valueIn - self.range[0]) % self.rangeSize

@@ -6,11 +6,13 @@ import time
 import copy
 import math
 
+import parameters as p
+
 from pylab import figure, show
 
 sys.path.append ('/Users/rhettcollier/workspace/genetic1/src')
 
-import programM1 as program
+import virtualMachineM1 as vm
 
 import logM1
 
@@ -23,6 +25,8 @@ except :
 
 def func (x) :
 	return math.sin (x*2) #.5 +   .2 * x + 100*math.sin (-x) +   .3 * (x ** 3)
+	#return .5 +   (.2 * x) +     0.4 *   (x ** 3.0)
+
 #fitness invert to get around local maxima
 
 
@@ -44,8 +48,8 @@ def plotFunction (sampleRange, processedResults, targetFuncResults=None, primord
 
 	#ax1.plot (t, sin (2*pi*t))
 	x = [_ * .1 for _ in range (sampleRange[0], sampleRange[1])]
-	print x
-	#hf = [func (_) for _ in x]
+	#print x
+	#hf = [opCode (_) for _ in x]
 	#print "hf"
 	#print hf
 	#print "results"
@@ -54,12 +58,13 @@ def plotFunction (sampleRange, processedResults, targetFuncResults=None, primord
 	#print "max(self.processedResults) - min(self.processedResults)"
 	#print max(self.processedResults) - min(self.processedResults)
 	
-	if max(processedResults) - min(processedResults) == 0.0 :
-		return
+	#print processedResults
+# 	if max(processedResults) - min(processedResults) == 0.0 :
+# 		return
 	
 	#print self.targetFuncResults
 	if targetFuncResults is not None :
-		print targetFuncResults
+		#print targetFuncResults
 		ax1.plot (x,targetFuncResults)
 	#print len(x)
 	#print len(self.results)
@@ -87,9 +92,9 @@ def plotFunction (sampleRange, processedResults, targetFuncResults=None, primord
 	#print self.processedResults
 	ax1.plot (x,processedResults)
 	
-	if primordialResults is not None :
-		print primordialResults
-		ax1.plot (x,primordialResults)  
+# 	if primordialResults is not None :
+# 		#print primordialResults
+# 		ax1.plot (x,primordialResults)  
 
 				
 	ax1.grid (True)
@@ -140,8 +145,13 @@ class Simulation :
 		self.targetLowerBound = min (self.targetFuncResults)
 		self.targetDomain = self.targetUpperBound - self.targetLowerBound
 
-		self.resultsUpperBound = max (self.results)
-		self.resultsLowerBound = min (self.results)
+		######### results are tuples, need to get the values out
+		resultValues = [_[0] for _ in self.results]
+		
+		#Is something wonky in how the results are getting passed on?
+
+		self.resultsUpperBound = max (resultValues)
+		self.resultsLowerBound = min (resultValues)
 		self.resultsDomain = self.resultsUpperBound - self.resultsLowerBound
 
 		if self.resultsDomain != 0.0 :
@@ -150,22 +160,27 @@ class Simulation :
 
 			if self.resultsScaleFactor != 0.0 :
 				self.yOffset = self.targetLowerBound - self.resultsLowerBound
-				self.processedResults = [(r-self.resultsLowerBound) * self.resultsScaleFactor + self.targetLowerBound for r in self.results]
+				self.processedResults = [(r-self.resultsLowerBound) * self.resultsScaleFactor + self.targetLowerBound for r in resultValues]
 
 			else :
-				self.processedResults = [(r-self.resultsLowerBound) + self.targetLowerBound for r in self.results]
+				self.processedResults = [(r-self.resultsLowerBound) + self.targetLowerBound for r in resultValues]
 
 		else :
-			self.processedResults = [(r-self.resultsLowerBound) + self.targetLowerBound for r in self.results]
+			self.processedResults = [(r-self.resultsLowerBound) + self.targetLowerBound for r in resultValues]
 
+		#self.processedResults = [_[0] for _ in self.results]
+		#print "postProcess processedResults"
+		#print self.processedResults
 
 	def computeFitness (self) :
 		#print "compute fitness"
 # 		self.simulation.run ()
+		#print len (self.processedResults), len (self.targetFuncResults)
 		resultSum = 0
 		for index,sample in enumerate (self.processedResults) :
 
 			#print self.processedResults
+
 			resultSum += abs (self.targetFuncResults[index] - sample)
 			#print abs (self.targetFuncResults[index] - sample)
 			#print resultSum
@@ -184,19 +199,17 @@ class Simulation :
 		self.targetFuncResults = []
 		for _sample in range (self.sampleRange[0], self.sampleRange[1]) :
 
-			self.individual.phenotype.execute(inputs = [_sample])
-
-			if len (self.individual.phenotype.realStack) > 0 :
-				result = self.individual.phenotype.realStack[-1]
-
-			else :
-				result = 0.0
-
+			result = self.individual.phenotype.execute(inputs = [_sample])
+			#print result
 			self.results.append (result)
 			self.targetFuncResults.append (func (_sample))
 
+		print "results for individual " + str (self.individual.ID) + " gen " + str (generation)
+		print self.results
+		#print "post process"
 		self.postProcess ()
 
+		#print "compute fitness"
 		self.computeFitness ()
 
 
@@ -204,21 +217,22 @@ class Simulation :
 
 
 
-class Individual : #SYNTHESIZE is REQUIRED to populate an individual unless some other function will do it
+class Individual :
 
 	# POS = probability of survival
-	funcPrec = program.Instruction.funcPrecision
-	operTypePrec = program.Instruction.operTypePrec
-	registerSetPrec = program.Instruction.registerSetPrecision
+	opCodePrec = vm.Instruction.opCodePrecision
+	operTypePrec = vm.Instruction.operTypePrec
+	argumentSetPrec = vm.Instruction.argumentPrecision
 
 	def __init__ (self, parentA=None, parentB=None) :
 
 		l.indent()
 		global unusedID
 
-		self.numLines = parameters["numLines"]
+		self.numLines = p.parameters["numInstructions"]
 
-		self.phenotype = program.Program (parameters['realMax'], parameters['intMax'])
+		self.ID = unusedID
+		self.phenotype = vm.Program (randomSeed=self.ID, expressionSize=self.numLines) #p.parameters['realMax'], p.parameters['intMax'])
 
 		if (parentA is None and
 			parentB is None ) :
@@ -235,7 +249,8 @@ class Individual : #SYNTHESIZE is REQUIRED to populate an individual unless some
 		else :
 			self.parents = [parentA, parentB]
 
-		self.ID = unusedID
+
+		self.globalSeed = 4 + self.ID
 
 		self.POS = None
 		self.fitness = None
@@ -256,58 +271,66 @@ class Individual : #SYNTHESIZE is REQUIRED to populate an individual unless some
 
 	def mutate (self, probabilityOfFeatureMutation, progress) :
 		#print "mutate"
+		#random.seed (progress + self.globalSeed)
 
 		#binaryStr = self.self.phenotype.instructionsToFlatBinary ()
-		binaryStr = self.genotype
-# 		print "before"
+		binaryStr = self.phenotype.genotype
+#  		print "before"
+#  		print binaryStr
 		#print self.genotype
 		#lineLength = int (len (binaryStr) / float (len (self.phenotype.instructions)))
 		strToList = [bool (int (_)) for _ in binaryStr]
 
 # 		instrList = ''
 # 		for line in self.phenotype.instructions :
-# 			if line.register2Type is not None :
+# 			if line.argument2Type is not None :
 # 				instrList += str (line.setRegister2) + " "
-# 
+#
 # 			else :
 # 				instrList += "None "
 
 
-		for _mutation in range (parameters["numMutatePoints"]) :
+		for _mutation in range (p.parameters["numMutatePoints"]) :
 			bitPlace = int (random.random () * len(binaryStr))
-			strToList[bitPlace] = not strToList[bitPlace] 
+			#strToList[bitPlace] = not strToList[bitPlace] 
+			strToList[bitPlace] = strToList[bitPlace] 
 
 # 		#print "mutate before"
 		#print self.phenotype.instructions
-		#print binaryStr
 		binaryStr = ''
 		for bit in strToList :
 			binaryStr += str (int (bit))
 
-		self.genotype = binaryStr
+# 		print "after"
+# 		print binaryStr
+
+		self.phenotype.genotype = binaryStr
 		self.expressGenotypeToPhenotype ()
 		#print self.genotype
 # 		instrList = ''
 # 		for line in self.phenotype.instructions :
-# 			if line.register2Type is not None :
-# 				#instrList += program.AtomType.strings[line.register2Type] + " "
+# 			if line.argument2Type is not None :
+# 				#instrList += vm.AtomType.strings[line.argument2Type] + " "
 # 				instrList += str (line.setRegister2) + " "
 # 
 # 			else :
 # 				instrList += "None "
 
 	def expressGenotypeToPhenotype (self) :
-		self.phenotype.flatBinaryToInstructions (self.genotype)
+		self.phenotype.flatBinaryToInstructions (self.phenotype.genotype)
 
 def test () :
 	#random.seed (0)
 	for generation in range (1000) :
+		print "Gen " + str (generation)
 		i = Individual ()
-		i.synthesize()
+		i.phenotype.synthesize ()
+		#print i.phenotype.genotype
 		sim = Simulation (i)
 		i.expressGenotypeToPhenotype ()
 		print "Primordial"
 		sim.run (generation)
+		#plotFunction(sim.sampleRange, sim.processedResults, sim.targetFuncResults, sim.processedResults)
 
 		i.mutate (1, 0)
 		i.expressGenotypeToPhenotype ()
@@ -317,5 +340,6 @@ def test () :
 		print "MUTATED"
 		plotFunction(mutatedSim.sampleRange, mutatedSim.processedResults, mutatedSim.targetFuncResults, sim.processedResults)
 
+# 		exit(0)
 
 #test()
