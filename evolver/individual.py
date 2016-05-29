@@ -1,22 +1,11 @@
 
 import random
-# import sys
-# import types
-# import time
-# import copy
-# import math
 
 import parameters as p
 
 from pylab import figure #, show
 
-#sys.path.append ('/Users/rhett/workspace/evolver')
-
 import virtualMachine as vm
-
-# def func (x) :
-# 	#return math.sin (x*2) #.5 +   .2 * x + 100*math.sin (-x) +   .3 * (x ** 3)
-# 	return .5 +   (.2 * x) +     0.4 *   (x ** 3.0) + math.sin (x*2) * 600 * math.cos(math.sqrt(x))
 
 
 unusedID = 0

@@ -1,16 +1,8 @@
 
-import math
 import time
 
 def targetFunc (x) :
-	#return math.sqrt(x)*30.0+x*0.05+0.0125*x**3
 	return 2*x + 3*x**2 + x**3
-# 	return .5 +   (.2 * x) +     0.4 *   (x ** 3.0) + math.sin(x) * 60
-
-# def func (x) :
-# 	#return math.sin (x*2) #.5 +   .2 * x + 100*math.sin (-x) +   .3 * (x ** 3)
-# 	return .5 +   (.2 * x) +     0.4 *   (x ** 3.0) + math.sin (x*2) * 600 * math.cos(math.sqrt(x))
-
 
 parameters = {	"numInstructions" : 10,
 				"numMutatePoints" : 150, #150

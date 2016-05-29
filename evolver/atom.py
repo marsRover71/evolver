@@ -6,7 +6,6 @@ import sys
 
 from pylab import figure, show
 
-
 sys.path.append ('/Users/rhett/workspace/evolver')
 
 

@@ -14,7 +14,7 @@ def inRange (a, b, rangeIn) :
 def linterp (controlPts, parameter) :
 	if controlPts[0] == controlPts[1] :
 		return controlPts[0]
-	
+
 	else :
 		rangeSize = controlPts[1] - controlPts[0]
 		return (parameter / float (rangeSize)) + controlPts[0]
@@ -46,7 +46,6 @@ class Population :
 		newIndividuals = [individual.Individual (initGeneration=self.generationNum) for _ in xrange (self.initialPopulationSize * 2)]
 
 		for individ in newIndividuals :
-			#random.seed (individ.ID)
 			individ.phenotype.synthesize()
 			individ.expressGenotypeToPhenotype ()
 
@@ -72,24 +71,14 @@ class Population :
 		isNotNone = sum (1 for _ in self.individuals if _.fitness is not None)
 		if isNotNone :
 
-# 			fitnesses = [_.fitness for _ in self.individuals if _.fitness is not None]
-# 			bestFitness = min (fitnesses)
-# 			worstFitness = max (fitnesses)
-
 			maxGracePeriod = p.parameters['gracePeriod']
-# 			nonMutatedCopies = []
 			for index,individual in enumerate (self.individuals) :
 				gracePeriod = min (maxGracePeriod, maxGracePeriod - index)
 
 				if (index > 0 and
 					individual.fitness is not None and
 					(self.generationNum >= individual.initGeneration + gracePeriod )) : # allow genetic lines to hang around for a few generations
-# 					newCopy = individual
-# 					newCopy.initGeneration = self.generationNum
-# 					nonMutatedCopies.append (newCopy)
 					individual.mutate (0, progress)
-
-			#self.individuals.extend (nonMutatedCopies)
 
 	def expressGenotypeToPhenotype (self) :
 		for individual in self.individuals :
@@ -289,7 +278,6 @@ self.history.append ({'bestFitness' : 0.0,
 							  'generation':self.generationNum })
 
 	def plotFitnesses (self) :
-		minFitnesses = [min (_['fitnesses']) for _ in self.history]
 
 		fig = figure (1)
 		ax1 = fig.add_subplot (1,1,1)

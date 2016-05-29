@@ -9,11 +9,7 @@ import parameters as p
 import atom
 
 
-# import sys
-#sys.path.append ('/Users/rhett/workspace/evolver')
-
 class RandomCache :
-	#random.seed (0.77777777)
 	random.seed (p.parameters["randomSeed"])
 
 	def __init__ (self, numValues) :
@@ -534,7 +530,6 @@ class Instruction :
 		return string
 
 	def fromBinary (self, binaryIn) :
-# 		overflowMessagesOn = p.parameters["overflowMessagesOn"]
 
 		opCodeStart = 0
 		######## OPCODE ######
@@ -548,8 +543,6 @@ class Instruction :
 
 		elif opCode.toInt () > len (Instruction.strings) - 1 :
 			raise Exception, "invalid opcode " + str (opCode.toInt ())
-# 			exit(0)
-# 			opCode = atom.BinaryString (rangeIn=self.opCodeTypeRange, binaryStrIn='0' * self.opCodePrecision)
 
 		self.opCode = opCode.toInt ()
 
@@ -737,10 +730,8 @@ class Program :
 		random.seed (0)
 		self.instructions = []
 
-		numConstants = 3
 		numWorkingSymbols = 4
 		numInputs = p.parameters["numInputs"]
-# 		numSymbols = numInputs + numWorkingSymbols + numConstants
 
 		###### instructions to populate the symbol table with input variables #####
 		index = 0
@@ -934,8 +925,6 @@ class Program :
 	def popOperValue (self, operandNumber, instruction) :
 		#take the operand type and pop off the stack
 
-# 		global overflowMessagesOn
-
 		if operandNumber == 0 :
 			oper0Type = Instruction ().specs[instruction.opCode]['oper0Type']
 			if oper0Type == atom.AtomType.real :
@@ -1001,7 +990,6 @@ class Program :
 
 
 	def execute (self, inputs=None) :
-		#overflowMessagesOn = p.parameters["overflowMessagesOn"]
 		self.symbolTable = [(0,0.0) for _ in xrange (1000)]
 		self.symbolTopIndex = 0
 		self.inputs = []
@@ -1016,12 +1004,8 @@ class Program :
 		if inputs is not None :
 			self.inputs = inputs
 
-		#global overflowMessagesOn
-
 		for lineNum,instr in enumerate (self.instructions) :
 			r.setRandomSeed(self.randomSeed)
-
-# 			stackTopType,stackTopValue = self.machineStack.top ()
 
 			if Instruction.specs[instr.opCode]['arity']  == InstructionOperandType.binary :
 				self.operand0 = self.popOperValue (0, instr)
